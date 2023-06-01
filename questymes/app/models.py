@@ -1,127 +1,36 @@
 from django.db import models
+from django.contrib.auth.models import User
+from enum import Enum
 
 
-class Availability(models.Model):
-    availability_id = models.IntegerField(primary_key=True)
-    day = models.CharField(max_length=100)
-    startTime = models.DateTimeField()
-    endTime = models.DateTimeField()
-    recurringMeeting = models.ForeignKey('RecurringMeeting', on_delete=models.CASCADE)
+class Interviewee(User):
+    courses = models.ManyToManyField('Course')
 
 
-class Batch(models.Model):
-    batch_id = models.IntegerField(primary_key=True)
-    batch_name = models.CharField(max_length=100)
+class Interviewer(User):
+    post = models.CharField(max_length=25)
 
 
-class Interviews(models.Model):
-    interview_id = models.AutoField(primary_key=True)
-    interviewer_id = models.IntegerField()
-    interviewee_id = models.IntegerField()
-    start_time = models.TimeField()
-    end_time = models.TimeField()
-    date = models.DateField()
-    students_notes = models.CharField(max_length=255)
-    admin_feedback = models.CharField(max_length=255)
-    category = models.CharField(max_length=255)
-    instructions = models.CharField(max_length=255)
-    title = models.CharField(max_length=255)
-    meeting_link = models.CharField(max_length=255)
-    meeting_status = models.CharField(max_length=1)
-    batch = models.CharField(max_length=255)
-    reminder_sent = models.BooleanField()
-
-    def __str__(self):
-        return self.title
-
-
-class InterviewsOM(models.Model):
-    interview_id = models.AutoField(primary_key=True)
-    interviewer_id = models.IntegerField()
-    start_time = models.TimeField()
-    end_time = models.TimeField()
-    date = models.DateField()
-    students_notes = models.CharField(max_length=255)
-    admin_feedback = models.CharField(max_length=255)
-    category = models.CharField(max_length=255)
-    instructions = models.CharField(max_length=255)
-    title = models.CharField(max_length=255)
-    meeting_link = models.CharField(max_length=255)
-    meeting_status = models.CharField(max_length=1)
-    batch = models.CharField(max_length=255)
-    reminder_sent = models.BooleanField()
-
-    def __str__(self):
-        return self.title
-
-
-class OneOnOne(models.Model):
-    title = models.CharField(max_length=255)
-    instruction = models.CharField(max_length=255)
-    admin_id = models.IntegerField()
-    meeting_link = models.CharField(max_length=255)
-    date = models.DateField()
-    slot_time = models.ManyToManyField('SlotTiming')
-    duration = models.IntegerField()
-    type = models.CharField(max_length=255)
-    admin_name = models.CharField(max_length=255)
-
-    def __str__(self):
-        return self.title
-
-
-class RecurringMeeting(models.Model):
-    recurring_id = models.AutoField(primary_key=True)
-    admin_id = models.IntegerField()
-    title = models.CharField(max_length=255)
-    meeting_link = models.CharField(max_length=255)
-    instruction = models.CharField(max_length=255)
-    duration = models.IntegerField()
-    type = models.CharField(max_length=255)
-    availabilities = models.ManyToManyField('Availability')
-
-    def __str__(self):
-        return self.title
-
-
-class Role(models.Model):
-    id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=255)
-
-    def __str__(self):
-        return self.name
+class Course(models.Model):
+    course_name = models.CharField(max_length=25)
 
 
 class Slot(models.Model):
+    slot_name = models.CharField(max_length=25)
+    start_time = models.DateTimeField()
+    end_time = models.DateTimeField()
+    title = models.CharField(max_length=25)
 
-    slot_id = models.IntegerField(primary_key=True)
-    title = models.CharField(max_length=255)
-    instruction = models.TextField()
-    admin_id = models.IntegerField()
-    meeting_link = models.CharField(max_length=255)
+
+class InterviewerSlot(models.Model):
+    interviewer_id = models.ForeignKey('Interviewer', on_delete=models.CASCADE)
+    slot_id = models.ForeignKey('Slot', on_delete=models.CASCADE)
+    interviewee_id = models.ForeignKey('Interviewee', on_delete=models.CASCADE)
     date = models.DateField()
-    startTime = models.TimeField()
-    endTime = models.TimeField()
-    day = models.CharField(max_length=255)
-    type = models.CharField(max_length=255)
-    status = models.CharField(max_length=1)
-    user_id = models.IntegerField()
-    recurring_id = models.IntegerField()
-
-
-class User(models.Model):
-    id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=100)
-    email = models.EmailField(unique=True)
-    password = models.CharField(max_length=128)
-    roles = models.ManyToManyField('Role')
-
-    def __str__(self):
-        return self.email
-
-
-class SlotTiming(models.Model):
-
-    startTime = models.TimeField()
-    endTime = models.TimeField()
-
+    instructions = models.CharField(max_length=255)
+    meeting_link = models.CharField(max_length=255)
+    interviewee_attended = models.BooleanField()
+    interviewer_attended = models.BooleanField()
+    status = models.IntegerField()
+    feedback = models.TextField(max_length=500)
+    rating = models.IntegerField()
